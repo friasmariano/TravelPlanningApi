@@ -1,8 +1,8 @@
 
 namespace TravelPlanningApi.Models;
 
-public class User
+public class Dia
 {
     public int Id { get; set; }
-    public string Email { get; set; } = string.Empty;
+    public string Nombre { get; set; } = string.Empty;
 }
