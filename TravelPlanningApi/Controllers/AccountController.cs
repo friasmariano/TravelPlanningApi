@@ -43,25 +43,33 @@ public class AccountController: ControllerBase
             #region Declaration(s)
 	        var user = await _context.Usuarios
 									.Where(e => e.Email == request.Email)
-									.FirstOrDefaultAsync();
-	        
+                                                           									.FirstOrDefaultAsync();
+
 	        List<string> errors = new();
-	        ValidationResult emailResult = _emailValidator.Validate(request.Email);
-	        bool passwordValidator = _passwordHashValidator.ValidatePassword(user!.Password, request.Password);
 	        #endregion
 
 	        #region Validation(s)
-	        if (!emailResult.IsValid)
-	        {
-		        foreach (var error in emailResult.Errors)
-		        {
-			        errors.Add(error.ErrorMessage);
-		        }
-	        }
-	        
-	        if (!passwordValidator)
+	        if (user == null)
 	        {
 		        errors.Add("Credenciales inválidas.");
+	        }
+	        else
+	        {
+		        ValidationResult emailResult = _emailValidator.Validate(request.Email);
+		        bool passwordValidator = _passwordHashValidator.ValidatePassword(user!.Password, request.Password);
+		        
+		        if (!emailResult.IsValid)
+		        {
+			        foreach (var error in emailResult.Errors)
+			        {
+				        errors.Add(error.ErrorMessage);
+			        }
+		        }
+	        
+		        if (!passwordValidator)
+		        {
+			        errors.Add("Credenciales inválidas.");
+		        }
 	        }
 
 	        #endregion
@@ -98,7 +106,7 @@ public class AccountController: ControllerBase
 		        var token = tokenHandler.CreateToken(tokenDescriptor);
 		        var stringToken = tokenHandler.WriteToken(token);
 
-		        return Ok(stringToken);
+		        return Ok(new { token = stringToken });
 	        }
         
 

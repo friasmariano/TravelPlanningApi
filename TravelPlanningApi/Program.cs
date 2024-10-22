@@ -50,7 +50,7 @@ builder.Services.AddAuthorizationBuilder()
 // Swagger Authorization
 builder.Services.AddSwaggerGen(option =>
 {
-    option.SwaggerDoc("v1", new OpenApiInfo { Title = "Biblioteca Api", Version = "v1" });
+    option.SwaggerDoc("v1", new OpenApiInfo { Title = "TravelPlanning Api", Version = "v1" });
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
