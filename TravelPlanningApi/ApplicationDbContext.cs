@@ -14,6 +14,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Destino> Destinos { get; set; }
     public DbSet<DetallesItinerario> DetallesItinerarios { get; set; }
     public DbSet<Dia> Dias { get; set; }
+    public DbSet<Genero> Generos { get; set; }
     public DbSet<Itinerario> Itinerarios { get; set; }
     public DbSet<Pais> Paises { get; set; }
     public DbSet<Persona> Personas  { get; set; }
