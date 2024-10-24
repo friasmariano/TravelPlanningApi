@@ -12,6 +12,7 @@ using Microsoft.OpenApi.Models;
 using TravelPlanningApi.Repositories;
 using TravelPlanningApi.Services;
 using FluentValidation;
+using Microsoft.AspNetCore.Http.HttpResults;
 using TravelPlanningApi.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -116,10 +117,10 @@ app.UseAuthorization();
 
 #region UsuariosPorDefecto
 
-using (var scope = app.Services.CreateScope())
-{
-    var roles = new[] { "Admin", "Traveler" };
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var roles = new[] { "Admin", "Traveler" };
+// }
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -127,9 +128,39 @@ using (var scope = app.Services.CreateScope())
     await SeedUsersAsync(context);
 }
 
-async Task<IActionResult> CreateUserIfNotExists(string email, string password, string role, 
-                          string personaName, string userName, ApplicationDbContext context) {
+async Task<IActionResult> CreateUserIfNotExists(string email, string password, string role,
+                          string personaName, string userName, ApplicationDbContext context)
+{
+    DateTime now = DateTime.Now;
     
+    var country = "República Dominicana";
+    var paisExists = await context.Paises.AnyAsync(e => e.Nombre == country);
+
+    if (!paisExists)
+    {
+        var newCountry = new Pais { Nombre = country, Codigo = "RD" };
+        context.Paises.Add(newCountry);
+        await context.SaveChangesAsync();
+    }
+    
+    var generos = new[] { "Masculino", "Femenino" };
+
+    var existingGeneros = await context.Generos
+                                     .Where(e => generos.Contains(e.Nombre))
+                                     .Select(e => e.Nombre)
+                                     .ToListAsync();
+    var missingGeneros = generos.Except(existingGeneros);
+
+    if (missingGeneros.Any())
+    {
+        foreach (var nombre in missingGeneros)
+        {
+            context.Generos.Add(new Genero { Nombre = nombre });
+        }
+
+        await context.SaveChangesAsync();
+    }
+
     var usuario = await context.Usuarios
                         .Where(r => r.Email == email)
                         .FirstOrDefaultAsync();
@@ -143,7 +174,14 @@ async Task<IActionResult> CreateUserIfNotExists(string email, string password, s
                                .Where(r => r.Nombre == personaName)
                                .FirstOrDefaultAsync();
     
-    var persona = new Persona() { Nombre = personaName };
+    var persona = new Persona()
+    {
+        Nombre = personaName,
+        IdPaisOrigen = 1,
+        Direccion = "-",
+        GeneroId = 1,
+        FechaNacimiento = now.ToString()
+    };
     await context.Personas.AddAsync(persona);
     await context.SaveChangesAsync();
         
@@ -157,7 +195,6 @@ async Task<IActionResult> CreateUserIfNotExists(string email, string password, s
     context.Roles.Add(rolTemp);
     await context.SaveChangesAsync();
     
-    DateTime now = DateTime.Now;
     var user = new Usuario()
     {
         Username = userName,
